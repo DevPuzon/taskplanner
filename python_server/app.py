@@ -1,11 +1,14 @@
 # coding: utf-8
-from BaseHTTPServer import BaseHTTPRequestHandler,HTTPServer
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from sklearn.feature_extraction.text import CountVectorizer
 from datetime import datetime, timedelta
-from recurrent import RecurringEvent
-from urlparse import urlparse
-from spacy.en import English
-import cPickle as pickle
+#from recurrent import RecurringEventtry:
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
+from spacy.lang.en import English
+import pickle as cPickle
 import pandas as pd
 import numpy as np
 import dateutil
@@ -13,7 +16,7 @@ import random
 # Google Calendar API
 import httplib2
 import os
-from apiclient import discovery
+# from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
@@ -115,7 +118,7 @@ def get_credentials():
         os.makedirs(credential_dir)
     credential_path = os.path.join(credential_dir,
                                    'calendar-python-quickstart.json')
-
+    print('Storing credentials to ' + credential_path)
     store = Storage(credential_path)
     credentials = store.get()
     if not credentials or credentials.invalid:
@@ -129,27 +132,27 @@ def get_credentials():
     return credentials
 
 if __name__ == '__main__':
-    print 'loading credentials and authorizing client...'
+    print ('loading credentials and authorizing client...')
     credentials = get_credentials()
     http = credentials.authorize(httplib2.Http())
     service = discovery.build('calendar', 'v3', http=http)
 
-    print 'unpickling model...'
+    print ('unpickling model...')
     with open("models/classifier.pkl") as f:
         clf = pickle.load(f)
 
-    print 'loading parser...'
+    print ('loading parser...')
     parser = English()
 
     try:
     	#Create a web server and define the handler to manage the
     	#incoming request
     	server = HTTPServer(('', 8080), myHandler)
-    	print 'Python HTTP server started on port 8080!'
+    	print ('Python HTTP server started on port 8080!')
 
     	#Wait forever for incoming http requests
     	server.serve_forever()
 
     except KeyboardInterrupt:
-    	print 'Shutting down the web server'
+    	print ('Shutting down the web server')
     	server.socket.close()
